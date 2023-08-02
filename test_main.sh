@@ -1,26 +1,39 @@
 #!/usr/bin/bash
 
-tmp=/tmp/$$
+ans=/tmp/$$-ans
+result=/tmp/$$-result
+err_log=/tmp/$$-errors
 
-ERROR_EXIT () { # ERROR関数
- echo "$1" >&2 # エラーメッセージ(引数1)を標準エラー出⼒に表⽰
- rm -f /tmp/$$-* # 作ったファイルの削除
- exit 1 # エラー終了
-}
+#テスト0：通常操作
+./main.sh 15 10 > $result
+echo "5" > $ans
+diff $result $ans || echo "test0 : incorrect calc error" >> $err_log
 
+#テスト1：引数なし
+./main.sh > $result
+echo "Number of inputs is error" > $ans
+diff $result $ans || echo "test1 : args error" >> $err_log
 
-./main.sh 15 10 > $tmp-result
-echo "5" > $tmp-ans
-diff $tmp-result $tmp-ans || echo "incorrect calc error" >> $tmp-error
+#テスト2：引数が2つとも数字以外
+./main.sh "a" "b" > $result
+echo "Type of input is error" > $ans
+diff $result $ans || echo "test2 : input type error" >> $err_log
 
-./main.sh > $tmp-result
-echo "Number of inputs is error" > $tmp-ans
-diff $tmp-result $tmp-ans || echo "input value error" >> $tmp-error
+#テスト3：引数が1つだけ、尚且つ数字以外
+./main.sh "a" > $result
+echo "Number of inputs is error" > $ans
+diff $result $ans || echo "test3 : args and value erorr " >> $err_log
 
-./main.sh "a" > $tmp-result
-echo "Type of input is error" > $tmp-ans
-diff $tmp-result $tmp-ans || echo "input type error" >> $tmp-error
+#テスト4：引数がマイナスの場合
+./main.sh "100" "-50" > $result
+echo "Type of input is error" > $ans
+diff $result $ans || echo "test4 : input type error" >> $err_log
 
-if [ -f $tmp-error ]; then
-    ERROR_EXIT
+if [ -f $err_log ]; then
+  echo "error occurred"
+  cat $err_log 1>&2
+  rm -f $ans $result $err_log
+  exit 1
+else
+  rm -f $ans $result $err_log
 fi
